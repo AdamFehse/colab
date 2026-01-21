@@ -175,7 +175,8 @@ class TransformerForGeneration(nn.Module):
 
         # Embeddings
         self.token_embedding = nn.Embedding(vocab_size, embedding_dim)
-        self.pos_embedding = RotaryPositionalEmbedding(embedding_dim)
+        head_dim = embedding_dim // num_heads
+        self.pos_embedding = RotaryPositionalEmbedding(head_dim)
 
         # Transformer blocks
         self.blocks = nn.ModuleList([
