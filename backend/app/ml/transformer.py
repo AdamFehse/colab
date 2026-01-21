@@ -25,8 +25,7 @@ class RotaryPositionalEmbedding(nn.Module):
     def forward(self, seq_len: int, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
         t = torch.arange(seq_len, device=device, dtype=self.inv_freq.dtype)
         freqs = torch.einsum("i,j->ij", t, self.inv_freq)
-        emb = torch.cat((freqs, freqs), dim=-1)
-        return emb.cos(), emb.sin()
+        return freqs.cos(), freqs.sin()
 
 
 class MultiHeadAttention(nn.Module):
