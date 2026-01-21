@@ -47,19 +47,20 @@ class ExoplanetPreprocessor:
         logger.info("Fetching NASA exoplanet data...")
 
         url = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
-        query = """
-        SELECT pl_name, st_mass, pl_bmass, pl_orbsmax, pl_orbeccen,
-               pl_orbitinc, pl_argp, pl_longascnode, pl_meananomaly
-        FROM ps
-        WHERE pl_orbsmax IS NOT NULL
-        AND st_mass IS NOT NULL
-        AND pl_bmass IS NOT NULL
-        AND pl_orbeccen IS NOT NULL
-        AND pl_orbitinc IS NOT NULL
-        AND pl_argp IS NOT NULL
-        AND pl_longascnode IS NOT NULL
-        AND pl_meananomaly IS NOT NULL
-        """
+        query = (
+            "SELECT pl_name, st_mass, pl_bmasse, pl_orbsmax, pl_orbeccen, "
+            "pl_orbincl, pl_orblper, pl_orblon, pl_orbmeananom "
+            "FROM ps "
+            "WHERE pl_orbsmax IS NOT NULL "
+            "AND st_mass IS NOT NULL "
+            "AND pl_bmasse IS NOT NULL "
+            "AND pl_orbeccen IS NOT NULL "
+            "AND pl_orbincl IS NOT NULL "
+            "AND pl_orblper IS NOT NULL "
+            "AND pl_orblon IS NOT NULL "
+            "AND pl_orbmeananom IS NOT NULL"
+        )
+
 
         params = {
             "query": query,
@@ -97,13 +98,13 @@ class ExoplanetPreprocessor:
             planets = []
             for _, row in group.iterrows():
                 planets.append({
-                    'mass': float(row['pl_bmass']),  # Planet mass in Earth masses
+                    'mass': float(row['pl_bmasse']),  # Planet mass in Earth masses
                     'semi_major_axis': float(row['pl_orbsmax']),  # AU
                     'eccentricity': float(row['pl_orbeccen']),
-                    'inclination': float(row['pl_orbitinc']),
-                    'arg_periapsis': float(row['pl_argp']),
-                    'long_asc_node': float(row['pl_longascnode']),
-                    'mean_anomaly': float(row['pl_meananomaly']),
+                    'inclination': float(np.deg2rad(row['pl_orbincl'])),
+                    'arg_periapsis': float(np.deg2rad(row['pl_orblper'])),
+                    'long_asc_node': float(np.deg2rad(row['pl_orblon'])),
+                    'mean_anomaly': float(np.deg2rad(row['pl_orbmeananom'])),
                 })
 
             systems[system_name] = {
