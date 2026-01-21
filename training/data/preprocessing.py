@@ -37,7 +37,7 @@ class ExoplanetPreprocessor:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Quantization parameters
-        self.num_bins = 256
+        self.num_bins = 253
         self.vocab_size = 256
         self.augment_multiplier = augment_multiplier
         self.max_systems = max_systems
@@ -178,7 +178,7 @@ class ExoplanetPreprocessor:
         return normalized, stats
 
     def quantize_parameters(self, value: float) -> int:
-        """Quantize continuous value [0, 1] to discrete token [0, 255]"""
+        """Quantize continuous value [0, 1] to discrete token [0, 252]"""
         return int(np.clip(value * (self.num_bins - 1), 0, self.num_bins - 1))
 
     def dequantize_parameters(self, token: int) -> float:
