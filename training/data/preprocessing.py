@@ -49,16 +49,14 @@ class ExoplanetPreprocessor:
         url = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
         query = (
             "SELECT pl_name, st_mass, pl_bmasse, pl_orbsmax, pl_orbeccen, "
-            "pl_orbincl, pl_orblper, pl_orblon, pl_orbmeananom "
+            "pl_orbincl, pl_orblper "
             "FROM ps "
             "WHERE pl_orbsmax IS NOT NULL "
             "AND st_mass IS NOT NULL "
             "AND pl_bmasse IS NOT NULL "
             "AND pl_orbeccen IS NOT NULL "
             "AND pl_orbincl IS NOT NULL "
-            "AND pl_orblper IS NOT NULL "
-            "AND pl_orblon IS NOT NULL "
-            "AND pl_orbmeananom IS NOT NULL"
+            "AND pl_orblper IS NOT NULL"
         )
 
 
@@ -103,9 +101,7 @@ class ExoplanetPreprocessor:
                     'eccentricity': float(row['pl_orbeccen']),
                     'inclination': float(np.deg2rad(row['pl_orbincl'])),
                     'arg_periapsis': float(np.deg2rad(row['pl_orblper'])),
-                    'long_asc_node': float(np.deg2rad(row['pl_orblon'])),
-                    'mean_anomaly': float(np.deg2rad(row['pl_orbmeananom'])),
-                })
+                                                        })
 
             systems[system_name] = {
                 'central_mass': float(group.iloc[0]['st_mass']),
@@ -155,9 +151,7 @@ class ExoplanetPreprocessor:
                     'eccentricity': (planet['eccentricity'] - ecc_min) / (ecc_max - ecc_min + 1e-6),
                     'inclination': planet['inclination'] / (2 * np.pi),
                     'arg_periapsis': planet['arg_periapsis'] / (2 * np.pi),
-                    'long_asc_node': planet['long_asc_node'] / (2 * np.pi),
-                    'mean_anomaly': planet['mean_anomaly'] / (2 * np.pi),
-                }
+                                                        }
                 planets_norm.append(p_norm)
 
             normalized[name] = {
@@ -219,19 +213,17 @@ class ExoplanetPreprocessor:
             # Number of planets (1 token, clamped to max 8)
             sequence.append(min(num_planets, 8) + offset)
 
-            # Planet parameters (7 tokens per planet)
+            # Planet parameters (5 tokens per planet)
             for planet in system['planets']:
                 sequence.append(self.quantize_parameters(planet['mass']) + offset)
                 sequence.append(self.quantize_parameters(planet['semi_major_axis']) + offset)
                 sequence.append(self.quantize_parameters(planet['eccentricity']) + offset)
                 sequence.append(self.quantize_parameters(planet['inclination']) + offset)
                 sequence.append(self.quantize_parameters(planet['arg_periapsis']) + offset)
-                sequence.append(self.quantize_parameters(planet['long_asc_node']) + offset)
-                sequence.append(self.quantize_parameters(planet['mean_anomaly']) + offset)
-
+                                
             sequence.append(special_tokens['END'])
 
-            # Pad to max sequence length (max 8 planets * 7 params + 3 special tokens)
+            # Pad to max sequence length (max 8 planets * 5 params + 3 special tokens)
             max_length = 64
             sequence = sequence[:max_length]
             sequence += [special_tokens['PAD']] * (max_length - len(sequence))
@@ -259,11 +251,11 @@ class ExoplanetPreprocessor:
             # Randomly perturb angular parameters
             # Indices for angle parameters in token space
             for i in range(len(aug_seq)):
-                for j in range(3, len(aug_seq[i]), 7):  # Start after central_mass, num_planets
+                for j in range(3, len(aug_seq[i]), 5):  # Start after central_mass, num_planets
                     if j + 4 < len(aug_seq[i]):
                         # Add small random noise to angles
-                        noise = np.random.randint(-5, 6, size=4)
-                        aug_seq[i, j:j+4] = np.clip(aug_seq[i, j:j+4] + noise, 0, 255)
+                        noise = np.random.randint(-5, 6, size=2)
+                        aug_seq[i, j+3:j+5] = np.clip(aug_seq[i, j+3:j+5] + noise, 0, 255)
 
             augmented.append(aug_seq)
 
