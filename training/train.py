@@ -123,6 +123,7 @@ def main():
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
     parser.add_argument('--max-samples', type=int, default=0, help='Limit dataset size (0 = all)')
     parser.add_argument('--testing-mode', action='store_true', help='Use fast defaults for quick iteration')
+    parser.add_argument('--profile', choices=['test1', 'test2', 'full'], default='full', help='Preset training profile')
 
     args = parser.parse_args()
 
@@ -130,11 +131,19 @@ def main():
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
 
-    if args.testing_mode:
+    if args.testing_mode and args.profile == 'full':
+        args.profile = 'test1'
+
+    if args.profile == 'test1':
         args.epochs = 3
         args.batch_size = 8
         if args.max_samples == 0:
             args.max_samples = 2000
+    elif args.profile == 'test2':
+        args.epochs = 8
+        args.batch_size = 16
+        if args.max_samples == 0:
+            args.max_samples = 8000
 
     logger.info("=== Transformer Training ===")
     logger.info(f"Data: {args.data}")
@@ -142,6 +151,8 @@ def main():
     logger.info(f"Epochs: {args.epochs}")
     logger.info(f"Batch size: {args.batch_size}")
     logger.info(f"Learning rate: {args.lr}")
+    if args.profile != 'full':
+        logger.info(f"Profile: {args.profile}")
     if args.max_samples:
         logger.info(f"Max samples: {args.max_samples}")
     if args.testing_mode:

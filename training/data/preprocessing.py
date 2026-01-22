@@ -305,12 +305,20 @@ if __name__ == "__main__":
     parser.add_argument("--augment-multiplier", type=int, default=10)
     parser.add_argument("--max-systems", type=int, default=0)
     parser.add_argument("--testing-mode", action="store_true", help="Use fast defaults for quick iteration")
+    parser.add_argument("--profile", choices=["test1", "test2", "full"], default="full", help="Preset preprocessing profile")
     args = parser.parse_args()
 
-    if args.testing_mode:
+    if args.testing_mode and args.profile == 'full':
+        args.profile = 'test1'
+
+    if args.profile == 'test1':
         args.augment_multiplier = 2
         if args.max_systems == 0:
             args.max_systems = 200
+    elif args.profile == 'test2':
+        args.augment_multiplier = 3
+        if args.max_systems == 0:
+            args.max_systems = 800
 
     preprocessor = ExoplanetPreprocessor(
         output_dir=args.output_dir,
